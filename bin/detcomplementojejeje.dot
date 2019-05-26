@@ -1,0 +1,18 @@
+digraph {
+inic[shape=point];
+inic->q0;
+q2q4->errorHandler[label="b"];
+errorHandler->errorHandler[label="a"];
+q0->errorHandler[label="b"];
+q0->q3q1[label="a"];
+q4->q4[label="a"];
+q3q1->q2q4[label="b"];
+q2q4->q4[label="a"];
+q4->errorHandler[label="b"];
+q3q1->errorHandler[label="a"];
+errorHandler->errorHandler[label="b"];
+
+q3q1[shape=doublecircle];
+errorHandler[shape=doublecircle];
+q0[shape=doublecircle];
+}
