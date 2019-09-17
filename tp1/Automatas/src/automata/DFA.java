@@ -250,47 +250,31 @@ public class DFA extends FA {
 	 * @returns a new DFA accepting labguajes's closure.
 	 */
 	public DFA star() {
-	
 		assert repOk();
-		
-		Set<Triple<State, Character, State>> tSet = new HashSet<>();
-		Set<State> sSet = new HashSet<>();
-		State thisInitial = this.initialState();
-		Set<State> finalStates = this.finalStates();
-		
-		Integer n = this.states.size()+1;
-		String g = n.toString();
-		State newOrigin = new State("q"+g, true, true);
-		sSet.add(newOrigin);
-		
-		for(Triple<State, Character, State> t : this.getTransitions()) {
-			tSet.add(t);
+		Set<Character> newAlphabet = new HashSet<>();
+		Set<Triple<State, Character, State>> newTransitions = new HashSet<>();
+		Set<State> newStates = new HashSet<>();
+		HashMap<String, State> statesMap = new HashMap<>();
+		newAlphabet = alphabet;
+		for (State s : states) 
+			statesMap.put("a1"+s.getName(),new State("a1"+s.getName(),false,false));
+		for (Triple<State, Character, State> t : getTransitions()) {
+			newTransitions.add(new Triple<>(statesMap.get("a1"+(t.first().getName())),t.second(),statesMap.get("a1"+(t.third().getName()))));
 		}
-		
-		for (Character c : delta.get(thisInitial).keySet()) {
-			Triple<State, Character, State> t = new Triple<>(newOrigin, c, (State) delta.get(thisInitial).get(c).toArray()[0]);
-			tSet.add(t);
-		}
-		
-		for (State s : finalStates) {
-			for (Character c : delta.get(thisInitial).keySet()) {
-			Triple<State, Character, State> t = new Triple<>(s, c, (State) delta.get(thisInitial).get(c).toArray()[0]);
-			tSet.add(t);
-			}
-		}
-		
-		for (State s : this.states) {
-			if (s.isInitial()) {
-				State aux = new State(s.getName(), false, s.isFinal());
-				sSet.add(aux);
-			}else {
-			sSet.add(s);
-			}
-		}
-		
-		
-		DFA nuevo = new DFA(sSet, alphabet, tSet);	
-		return nuevo;		
+		State oldInitial = initialState();
+		State newInitial = new State("q0",true,false);
+		newStates.add(newInitial);
+		newTransitions.add(new Triple<>(newInitial, Lambda, statesMap.get("a1"+oldInitial)));
+		State newFinal = new State("qf",false,true);
+		newStates.add(newFinal);
+		newTransitions.add(new Triple<>(newInitial, Lambda, newFinal));
+		for (State s : finalStates())
+			newTransitions.add(new Triple<>(statesMap.get("a1"+s),Lambda,newFinal));
+		for (State s : finalStates())
+			newTransitions.add(new Triple<>(statesMap.get("a1"+s),Lambda,statesMap.get("a1"+oldInitial)));
+		newStates.addAll(statesMap.values());
+		return new NFALambda(newStates, newAlphabet, newTransitions).toDFA();
+				
 	}
 	
 	/**
@@ -303,73 +287,121 @@ public class DFA extends FA {
 	public DFA union(DFA other) {
 		assert repOk();
 		assert other.repOk();
-				
-		Set<Triple<State, Character, State>> tSet = new HashSet<>();
-		Set<State> sSet = new HashSet<>();
-		
-		for(Triple<State, Character, State> t : this.getTransitions()) {
-			tSet.add(t);
-		}
-		for(Triple<State, Character, State> t : other.getTransitions()) {
-			tSet.add(t);
-		}
-		
 		Set<Character> newAlphabet = new HashSet<>();
-		
-		for (Character c: this.alphabet) {
+		Set<Triple<State, Character, State>> newTransitions = new HashSet<>();
+		Set<State> newStates = new HashSet<>();
+		HashMap<String, State> statesMap = new HashMap<>();
+		for (Character c : alphabet)
 			newAlphabet.add(c);
-		}
-		for (Character c: other.alphabet) {
+		for (Character c : other.alphabet) 
 			newAlphabet.add(c);
-		} 
-		
-		State thisInitial = this.initialState();
-		State otherInitial = other.initialState();
-		
-		Integer n = this.states.size()+other.states.size()+1;
-		String g = n.toString();
-		Boolean b = (thisInitial.isFinal()||otherInitial.isFinal());
-		
-		State newOrigin = new State("q"+g, true, b);
-		sSet.add(newOrigin);
-		
-		for (Character c : delta.get(thisInitial).keySet()) {
-			Triple<State, Character, State> t = new Triple<>(newOrigin, c, (State) delta.get(thisInitial).get(c).toArray()[0]);
-			tSet.add(t);
+		for (State s : states) 
+			statesMap.put("a1"+s.getName(),new State("a1"+s.getName(),false,false));
+		for (State s : other.getStates())
+			statesMap.put("a2"+s.getName(),new State("a2"+s.getName(),false,false));
+		for (Triple<State, Character, State> t : getTransitions()) {
+			newTransitions.add(new Triple<>(statesMap.get("a1"+(t.first().getName())),t.second(),statesMap.get("a1"+(t.third().getName()))));
 		}
-		
-		for (Character c : other.delta.get(otherInitial).keySet()) {
-			Triple<State, Character, State> t = new Triple<>(newOrigin, c, (State) other.delta.get(otherInitial).get(c).toArray()[0]);
-			tSet.add(t);
+		for (Triple<State, Character, State> t : other.getTransitions()) {
+			newTransitions.add(new Triple<>(statesMap.get("a2"+(t.first().getName())),t.second(),statesMap.get("a2"+(t.third().getName()))));
 		}
-		
-		for (State s : this.states) {
-			if (s.isInitial()) {
-				State aux = new State(s.getName(), false, s.isFinal());
-				sSet.add(aux);
-			}else {
-			sSet.add(s);
-			}
-		}
-		
-		for (State s : other.states) {
-			if (s.isInitial()) {
-				State aux = new State(s.getName(), false, s.isFinal());
-				sSet.add(aux);
-			}else {
-			sSet.add(s);
-			}
-		}
-		
-		DFA nuevo = new DFA(sSet, newAlphabet, tSet);	
-		return nuevo;
+		State oldInitial = initialState();
+		State otherOldInitial = other.initialState();
+		State newInitial = new State("q0",true,false);
+		newStates.add(newInitial);
+		newTransitions.add(new Triple<>(newInitial, Lambda, statesMap.get("a1"+oldInitial)));
+		newTransitions.add(new Triple<>(newInitial, Lambda, statesMap.get("a2"+otherOldInitial)));
+		State newFinal = new State("qf",false,true);
+		newStates.add(newFinal);
+		for (State s : finalStates())
+			newTransitions.add(new Triple<>(statesMap.get("a1"+s), Lambda, newFinal));
+		for (State s : other.finalStates())
+			newTransitions.add(new Triple<>(statesMap.get("a2"+s), Lambda, newFinal));
+		newStates.addAll(statesMap.values());
+		return new NFALambda(newStates, newAlphabet, newTransitions).toDFA();
 	}
 	
+	/**
+	 * Returns a new automaton which recognizes the concatenation of both
+	 * languages, the one accepted by 'this' and the one represented
+	 * by 'other'. 
+	 * 
+	 * @returns a new DFA accepting the concatenation of both languages.
+	 */	
+	public DFA concat(DFA other) {
+		assert repOk();
+		assert other.repOk();
+		Set<Character> newAlphabet = new HashSet<>();
+		Set<Triple<State, Character, State>> newTransitions = new HashSet<>();
+		Set<State> newStates = new HashSet<>();
+		HashMap<String, State> statesMap = new HashMap<>();
+		for (Character c : alphabet)
+			newAlphabet.add(c);
+		for (Character c : other.alphabet) 
+			newAlphabet.add(c);
+		for (State s : states) 
+			statesMap.put("a1"+s.getName(),new State("a1"+s.getName(),s.isInitial(),false));
+		for (State s : other.getStates())
+			statesMap.put("a2"+s.getName(),new State("a2"+s.getName(),false,s.isFinal()));
+		for (Triple<State, Character, State> t : getTransitions()) {
+			newTransitions.add(new Triple<>(statesMap.get("a1"+(t.first().getName())),t.second(),statesMap.get("a1"+(t.third().getName()))));
+		}
+		for (Triple<State, Character, State> t : other.getTransitions()) {
+			newTransitions.add(new Triple<>(statesMap.get("a2"+(t.first().getName())),t.second(),statesMap.get("a2"+(t.third().getName()))));
+		}
+		State oldInitial = other.initialState();
+		for (State s : finalStates()) {
+			newTransitions.add(new Triple<>(statesMap.get("a1"+(s.getName())), Lambda,statesMap.get("a2"+(oldInitial.getName()))));
+		}
+		newStates.addAll(statesMap.values());
+		return new NFALambda(newStates, newAlphabet, newTransitions).toDFA();		
+	}
+
+	/**
+	 * Returns a new automaton which recognizes the char a
+	 * @returns a new DFA accepting the char a.
+	 */	
+
+	public static DFA fromToken(char a) {
+		State initialState = new State("q0", true, false);
+		State finalState = new State("q1", false, true);
+		Set<State> states = new HashSet<>();
+		Set<Character> alphabet = new HashSet<>();
+		states.add(initialState);
+		states.add(finalState);
+		alphabet.add(a);
+		Set<Triple<State,Character,State>> transitions = new HashSet<>();
+		Triple<State,Character,State> transition = new Triple<>(initialState, a, finalState);
+		transitions.add(transition);
+		return new DFA(states, alphabet, transitions);
+	}
+	
+	/**
+	 * Returns a new automaton which recognizes the following language:
+	 * L(sigma*) . L(this) . L(sigma*)  where * is the start operation 
+	 * and . concat operation
+	 * @returns a new DFA accepting the described language.
+	 */	
+
+    public DFA toGeneralDFA(Set<Character> sigma) {
+    		State state = new State("q0",true,true);
+    		Set<State> states = new HashSet<>();
+    		states.add(state);
+    		Set<Triple<State,Character,State>> transitions = new HashSet<>();
+    		for (Character c : sigma)
+    			transitions.add(new Triple<>(state, c, state));
+    		DFA automaton1 = new DFA(states, sigma, transitions);
+    		DFA automaton2 = new DFA(states, sigma, transitions);
+    		return automaton1.concat(this).concat(automaton2);
+    }
+
+
 	@Override
 	public boolean repOk() {
 		return !checkLambda() && checkInitialStates() && checkCorrectTransitions() && checkDeterministicTransitions();
 	}
-		
+	
+
 	
 
 }

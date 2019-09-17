@@ -128,9 +128,10 @@ public class NFALambda extends FA {
 		currentStates.add(initialState());
 		//System.out.println("initialState="+initialState());
 		currentStates = lambdaClosure(currentStates);
+		dfaStates.add(toState(currentStates,true));
 		//System.out.println("currentStates="+currentStates);
 		LinkedList<State> initialList = new LinkedList<>();
-		for (State s : arrStateSet)
+		for (State s : currentStates)
 			initialList.add(s);
 		currentStatesSet.add(new HashSet<State>(initialList));
 		visited.add(new HashSet<State>(initialList));
@@ -142,7 +143,7 @@ public class NFALambda extends FA {
 		while(!currentStatesSet.isEmpty()) {
 			for (State s : currentStatesSet.remove())
 				currentStates.add(s);
-			State depSt = toState(currentStates);
+			State depSt = toState(currentStates,false);
 			dfaStates.add(depSt);
 			for (Character c : newAlphabet) {
 				for (State depState : currentStates) {
@@ -152,7 +153,7 @@ public class NFALambda extends FA {
 				}
 				arrStateSet = lambdaClosure(arrStateSet);
 				if (!arrStateSet.isEmpty()) {
-					State arrSt = toState(arrStateSet);
+					State arrSt = toState(arrStateSet,false);
 					dfaStates.add(arrSt);
 					transitions.add(new Triple<>(depSt,c,arrSt));
 					if (!visited.contains(arrStateSet)) {
@@ -170,18 +171,15 @@ public class NFALambda extends FA {
 		return new DFA(dfaStates,newAlphabet,transitions);
 	}
 	
-	private State toState (Set<State> stateSet) {
+	private State toState (Set<State> stateSet, boolean isInitial) {
 		//if (stateSet.isEmpty())
 		//	throw new IllegalArgumentException("calling toState(set) with an empty set");
 		String stateName = "";
-		boolean isInitial = false;
 		boolean isFinal = false;
 		for (State s : 	stateSet) {
 			stateName+=s.getName();
 			if (s.isFinal())
 				isFinal = true;
-			if(s.isInitial())
-				isInitial= true;
 		}
 		return new State(stateName,isInitial,isFinal);
 	}

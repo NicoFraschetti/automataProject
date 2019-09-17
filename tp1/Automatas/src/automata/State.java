@@ -29,6 +29,10 @@ public class State {
 		return isInitial;
 	}
 	
+	public void setIsInitial(boolean b) {
+		isInitial = b;
+	}
+	
 	public State complement() {
 		if (isFinal)
 			return new State(name, isInitial, false);

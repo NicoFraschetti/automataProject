@@ -1,0 +1,11 @@
+digraph {
+inic[shape=point];
+inic->a1q0;
+a1q1->a2q0a1q2[label="b"];
+a1q0->a1q1[label="a"];
+a2q0a2q1a1q2->a2q0a2q1a1q2[label="b"];
+a2q0a1q2->a2q0a2q1a1q2[label="b"];
+
+a2q0a2q1a1q2[shape=doublecircle];
+a2q0a1q2[shape=doublecircle];
+}

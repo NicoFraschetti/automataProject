@@ -1,0 +1,14 @@
+digraph {
+inic[shape=point];
+inic->a1a1q0a2q0q0qfq0;
+a1a1q0a2q0q0qfq0->a1a1q0a2q0q0a1a1q1qfqf[label="a"];
+a1a1q0a2q0q0a1a1q1qfqf->a1a1q0a2q0q0a1a1q1qfqf[label="a"];
+a1a1q0a2q0q0qfq0->a1a1q0a2q0q0a1qfa2q1qf[label="b"];
+a1a1q0a2q0q0a1qfa2q1qf->a1a1q0a2q0q0a1a1q1qfqf[label="a"];
+a1a1q0a2q0q0a1a1q1qfqf->a1a1q0a2q0q0a1qfa2q1qf[label="b"];
+a1a1q0a2q0q0a1qfa2q1qf->a1a1q0a2q0q0a1qfa2q1qf[label="b"];
+
+a1a1q0a2q0q0a1qfa2q1qf[shape=doublecircle];
+a1a1q0a2q0q0a1a1q1qfqf[shape=doublecircle];
+a1a1q0a2q0q0qfq0[shape=doublecircle];
+}
